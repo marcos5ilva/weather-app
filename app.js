@@ -1,6 +1,7 @@
 const request = require("request"); //HTTP client module
 const geocode = require("./utils/geocode");
 const forecast = require("./utils/forecast");
+const yargs = require("yargs");
 
 // const darkskyURL =
 //   "https://api.darksky.net/forecast/7c8ad70fb67957a77247dafa42433940/37.8267,-122.4233?units=us";
@@ -29,12 +30,36 @@ const forecast = require("./utils/forecast");
 //   }
 // });
 
-geocode("Salt Lake City", (error, data) => {
-  console.log("Error", error);
-  console.log("Data", data);
+//Creating weather search command
+yargs.command({
+  command: "search",
+  describe: "Search for the weather conditions in a specific city",
+  builder: {
+    city: {
+      describe: "Search weather",
+      demandOption: true,
+      type: "string"
+    }
+  },
+
+  handler(argv) {
+    console.log(argv.city);
+
+    geocode(argv.city, (error, { longitude, latitude, location }) => {
+      if (error) {
+        return console.log(error);
+      }
+
+      forecast(longitude, latitude, (error, forecastData) => {
+        if (error) {
+          return console.log(error);
+        }
+
+        console.log(location);
+        console.log(forecastData);
+      });
+    });
+  }
 });
 
-forecast(-111.8904, 40.767, (error, data) => {
-  console.log("Error", error);
-  console.log("Data", data);
-});
+yargs.parse();
